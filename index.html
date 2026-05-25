@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Helios">
+    <title>Helios — Solar Health & Circadian Tracker</title>
+    
+    <!-- PWA Manifest & Icons -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+    
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Full-screen Dynamic Solar Glow Background -->
+    <div class="solar-glow" id="solarGlow"></div>
+    
+    <!-- PWA iOS Safe Space Wrapper -->
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <img src="logo.png" alt="Helios Logo" class="brand-logo" id="appLogo">
+                <div class="brand-text">
+                    <h1>HELIOS</h1>
+                    <span class="sub-brand">Solar Circadian Health</span>
+                </div>
+            </div>
+            <div class="location-status" id="locationStatus">
+                <div class="pulse-dot"></div>
+                <span id="locationText">Locating...</span>
+            </div>
+        </header>
+
+        <!-- Main Content Area (Scrollable) -->
+        <main class="app-main">
+            
+            <!-- Dynamic Solar Arc Section -->
+            <section class="glass-card solar-arc-container">
+                <div class="card-header">
+                    <h2>Solar Zenith Path</h2>
+                    <span class="time-now" id="currentTime">12:00 PM</span>
+                </div>
+                
+                <div class="solar-arc-svg-container">
+                    <svg viewBox="0 0 300 120" class="solar-arc-svg">
+                        <!-- Background arc -->
+                        <path d="M 10 110 A 140 140 0 0 1 290 110" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3" stroke-dasharray="4,4" />
+                        <!-- Highlighted arc path (progress of day) -->
+                        <path id="solarArcProgress" d="M 10 110 A 140 140 0 0 1 290 110" fill="none" stroke="url(#arcGradient)" stroke-width="4" stroke-dasharray="500" stroke-dashoffset="500" />
+                        
+                        <!-- Horizon reference -->
+                        <line x1="0" y1="110" x2="300" y2="110" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+                        
+                        <!-- Sun node -->
+                        <g id="sunNode" transform="translate(150, 20)">
+                            <circle r="12" fill="url(#sunGradient)" filter="url(#sunGlowFilter)" />
+                            <circle r="6" fill="#fff" />
+                        </g>
+                        
+                        <!-- Gradients and filters -->
+                        <defs>
+                            <linearGradient id="arcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#ff7e5f" />
+                                <stop offset="50%" stop-color="#ffd700" />
+                                <stop offset="100%" stop-color="#feb47b" />
+                            </linearGradient>
+                            <linearGradient id="sunGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fff5cc" />
+                                <stop offset="30%" stop-color="#ffd700" />
+                                <stop offset="100%" stop-color="#ff416c" />
+                            </linearGradient>
+                            <filter id="sunGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="6" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                    </svg>
+                    
+                    <div class="sun-times">
+                        <span id="sunriseTime">Sunrise: --:--</span>
+                        <span id="solarNoonTime">Solar Noon: --:--</span>
+                        <span id="sunsetTime">Sunset: --:--</span>
+                    </div>
+                </div>
+                
+                <!-- Solar Window Alert Badge -->
+                <div class="window-badge" id="currentWindowBadge">
+                    <span class="badge-icon">☀️</span>
+                    <div class="badge-details">
+                        <span class="badge-title" id="windowTitle">Analysing Solar Path...</span>
+                        <span class="badge-desc" id="windowDesc">Checking weather & light availability</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dual Real-Time Solar Metrics -->
+            <div class="metrics-row">
+                <!-- Near-Infrared Gauge -->
+                <div class="glass-card metric-card" id="nirCard">
+                    <div class="metric-icon-wrap nir-color">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                        </svg>
+                    </div>
+                    <h3>Near-Infrared (NIR)</h3>
+                    <div class="gauge-value" id="nirValue">-- <span class="unit">W/m²</span></div>
+                    <div class="gauge-label" id="nirLabel">Inactive</div>
+                    <div class="progress-bar-wrap">
+                        <div class="progress-bar-fill nir-fill" id="nirBar" style="width: 0%"></div>
+                    </div>
+                    <p class="card-footer-text">Penetrates tissue. Boosts ATP.</p>
+                </div>
+
+                <!-- UV Index Gauge -->
+                <div class="glass-card metric-card" id="uvCard">
+                    <div class="metric-icon-wrap uv-color">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="4" />
+                            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                        </svg>
+                    </div>
+                    <h3>Ultraviolet (UV)</h3>
+                    <div class="gauge-value" id="uvValue">--</div>
+                    <div class="gauge-label" id="uvLabel">Inactive</div>
+                    <div class="progress-bar-wrap">
+                        <div class="progress-bar-fill uv-fill" id="uvBar" style="width: 0%"></div>
+                    </div>
+                    <p class="card-footer-text">Triggers Vitamin D synthesis.</p>
+                </div>
+            </div>
+
+            <!-- Interactive Solar Session Tracker Card -->
+            <section class="glass-card session-tracker-container">
+                <div class="session-header">
+                    <div class="session-title-wrap">
+                        <h2>Outdoor Light Tracker</h2>
+                        <p class="session-subtitle">Record and calculate active solar doses</p>
+                    </div>
+                    <div class="session-status-tag id="sessionStatusTag" style="display: none;">Tracking...</div>
+                </div>
+
+                <!-- Session Inputs Setup Panel -->
+                <div id="trackerSetupPanel">
+                    <div class="input-grid">
+                        <div class="input-card">
+                            <label for="skinType">Fitzpatrick Skin Type</label>
+                            <select id="skinType">
+                                <option value="1">Type I (Very Fair, Always Sunburns)</option>
+                                <option value="2" selected>Type II (Fair, Easily Sunburns)</option>
+                                <option value="3">Type III (Medium/Golden, Mild Burn)</option>
+                                <option value="4">Type IV (Olive, Rarely Sunburns)</option>
+                                <option value="5">Type V (Brown, Very Rarely Sunburns)</option>
+                                <option value="6">Type VI (Black, Never Sunburns)</option>
+                            </select>
+                            <span class="input-info">Calibrates Vitamin D synthesis rate & UV limits.</span>
+                        </div>
+
+                        <div class="input-card">
+                            <label for="clothingLevel">Clothing & Coverage</label>
+                            <select id="clothingLevel">
+                                <option value="jacket">Heavy Jacket & Jeans (15% Skin Area)</option>
+                                <option value="sleeves">Long Sleeves & Trousers (30% Skin Area)</option>
+                                <option value="tshirt_trousers" selected>T-Shirt & Trousers (35% Skin Area)</option>
+                                <option value="long_dress">Long Dress with Short Sleeves (40% Skin Area)</option>
+                                <option value="short_dress">Short Dress with Short Sleeves (50% Skin Area)</option>
+                                <option value="tshirt">T-Shirt & Shorts (55% Skin Area)</option>
+                                <option value="swim">Swimsuit / Minimal Coverage (85% Skin Area)</option>
+                            </select>
+                            <span class="input-info">Clothing filters UV and transmits 70% NIR.</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-pulse" id="startSessionBtn">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3" />
+                        </svg>
+                        Start Solar Session
+                    </button>
+                </div>
+
+                <!-- Active Tracking Dashboard (Hidden by Default) -->
+                <div id="activeTrackingPanel" style="display: none;">
+                    <div class="timer-display-wrap">
+                        <div class="timer-glow" id="activeTimerGlow"></div>
+                        <div class="timer-circular-progress">
+                            <svg viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="5" />
+                                <circle id="sessionRadialProgress" cx="50" cy="50" r="45" fill="none" stroke="url(#timerGradient)" stroke-width="5" stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="round" />
+                                <defs>
+                                    <linearGradient id="timerGradient" x1="0" y1="0" x2="1" y2="1">
+                                        <stop offset="0%" stop-color="#ffd700" />
+                                        <stop offset="100%" stop-color="#ff416c" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="timer-center-text">
+                                <span class="timer-time" id="sessionTime">00:00</span>
+                                <span class="timer-label">OUTDOORS</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Session Counters -->
+                    <div class="live-stats-grid">
+                        <div class="live-stat-box">
+                            <span class="stat-label">VITAMIN D SYNTESIS</span>
+                            <div class="stat-value text-gold" id="liveVitD">0 <span class="stat-unit">IU</span></div>
+                            <div class="progress-bar-wrap small-bar">
+                                <div class="progress-bar-fill gold-fill" id="vitDGoalBar" style="width: 0%"></div>
+                            </div>
+                            <span class="stat-sub" id="liveVitDPercent">0% of 2000 IU Goal</span>
+                        </div>
+
+                        <div class="live-stat-box">
+                            <span class="stat-label">SYSTEMIC NIR DOSE</span>
+                            <div class="stat-value text-red" id="liveNirDose">0.0 <span class="stat-unit">mJ/cm²</span></div>
+                            <div class="progress-bar-wrap small-bar">
+                                <div class="progress-bar-fill red-fill" id="nirGoalBar" style="width: 0%"></div>
+                            </div>
+                            <span class="stat-sub" id="liveNirPower">Absorbing -- W/m²</span>
+                        </div>
+                    </div>
+
+                    <!-- Live Safety Warnings -->
+                    <div class="safety-indicator-box alert-safe" id="safetyAlertBox">
+                        <div class="alert-pulse"></div>
+                        <div class="alert-text-details">
+                            <strong id="safetyAlertTitle">Safe UV Levels</strong>
+                            <p id="safetyAlertDesc">Active sun exposure is highly therapeutic. Keep track of exposure limits.</p>
+                        </div>
+                    </div>
+
+                    <!-- Session Controls -->
+                    <div class="button-group">
+                        <button class="btn btn-secondary" id="cancelSessionBtn">Discard</button>
+                        <button class="btn btn-primary" id="stopSessionBtn">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="4" y="4" width="16" height="16" rx="2" />
+                            </svg>
+                            End & Save Session
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Guide to Solar Circadian Windows -->
+            <section class="glass-card guide-container">
+                <div class="card-header">
+                    <h2>Therapeutic Solar Windows</h2>
+                    <span class="header-desc">Maximize health, mitigate risk</span>
+                </div>
+                
+                <div class="timeline">
+                    <!-- Morning NIR -->
+                    <div class="timeline-item" id="guideMorning">
+                        <div class="timeline-icon-wrap morning-icon">
+                            <span>☀️</span>
+                        </div>
+                        <div class="timeline-details">
+                            <div class="timeline-title-row">
+                                <h3>Morning NIR Prime</h3>
+                                <span class="window-status-tag" id="statusMorning">Offline</span>
+                            </div>
+                            <span class="window-time">Sunrise ➔ Sunrise + 2 Hours</span>
+                            <p>High near-infrared, zero UV. Cytochrome C Oxidase in cells absorbs near-infrared light, triggering ATP (cellular energy) production. This "pre-conditions" skin, building defensive mechanisms against later UV rays.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Midday Vit-D -->
+                    <div class="timeline-item" id="guideMidday">
+                        <div class="timeline-icon-wrap midday-icon">
+                            <span>🔋</span>
+                        </div>
+                        <div class="timeline-details">
+                            <div class="timeline-title-row">
+                                <h3>Midday Vitamin D Window</h3>
+                                <span class="window-status-tag" id="statusMidday">Offline</span>
+                            </div>
+                            <span class="window-time">Solar Noon ± 2 Hours (When UV Index > 3)</span>
+                            <p>High UV index. Essential for active Vitamin D production in skin cells. Highly efficient, requiring only 10–20 minutes. Maintain protection beyond recommended limits to prevent DNA damage.</p>
+                        </div>
+                    </div>
+
+                    <!-- Evening NIR -->
+                    <div class="timeline-item" id="guideEvening">
+                        <div class="timeline-icon-wrap evening-icon">
+                            <span>🌙</span>
+                        </div>
+                        <div class="timeline-details">
+                            <div class="timeline-title-row">
+                                <h3>Evening NIR Recovery</h3>
+                                <span class="window-status-tag" id="statusEvening">Offline</span>
+                            </div>
+                            <span class="window-time">Sunset - 2 Hours ➔ Sunset</span>
+                            <p>High near-infrared, zero UV. Activates systemic tissue recovery mechanisms, boosts circulation, and primes the pineal gland to release melatonin, cementing perfect circadian sleep alignment.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Historical Solar Log -->
+            <section class="glass-card history-container">
+                <div class="card-header">
+                    <h2>Weekly Progress</h2>
+                    <span class="header-desc" id="weeklyStatsSummary">Loading history logs...</span>
+                </div>
+                
+                <!-- Custom CSS Bar Chart -->
+                <div class="history-chart-wrapper">
+                    <div class="y-axis">
+                        <span>60m</span>
+                        <span>40m</span>
+                        <span>20m</span>
+                        <span>0m</span>
+                    </div>
+                    <div class="chart-bars-container" id="historyBarsContainer">
+                        <!-- Bars dynamically loaded via js -->
+                        <div class="chart-bar-column">
+                            <div class="bar-fill-wrap">
+                                <div class="bar-fill-seg nir-part" style="height: 0%"></div>
+                                <div class="bar-fill-seg uv-part" style="height: 0%"></div>
+                            </div>
+                            <span class="bar-day-label">Mon</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-legend">
+                    <div class="legend-item"><span class="legend-color nir-legend"></span> Near-Infrared Focus</div>
+                    <div class="legend-item"><span class="legend-color uv-legend"></span> UV / Vitamin D Focus</div>
+                </div>
+            </section>
+
+            <!-- Scientific Background Insights Panel -->
+            <section class="glass-card science-insights-container">
+                <div class="card-header align-start">
+                    <div class="science-tag">Nature Scientific Reports 2025</div>
+                    <h2>How Sun Wavelengths Penetrate Your Body</h2>
+                </div>
+                
+                <div class="science-content">
+                    <p class="main-insight">
+                        "Longer wavelengths of sunlight penetrate through the human body and have the ability to improve physiological function systemically, even without eye involvement."
+                    </p>
+                    
+                    <div class="scientific-facts-grid">
+                        <div class="fact-box">
+                            <h4>Thoracic Penetration</h4>
+                            <p>Near-infrared wavelengths from sunlight (specifically 830–860 nm) pass completely through the human chest/thorax. While clothing reduces intensity slightly, it does not stop this absorption.</p>
+                        </div>
+                        <div class="fact-box">
+                            <h4>Mitochondrial Stimulation</h4>
+                            <p>When absorbed, these wavelengths excite <strong>Cytochrome C Oxidase</strong> inside cells, sparking a massive upgrade in mitochondrial ATP (cellular fuel) production.</p>
+                        </div>
+                        <div class="fact-box">
+                            <h4>Systemic Distal Impact</h4>
+                            <p>Lab subjects exposed to 15-minute thoracic NIR sessions showed significantly improved vision and cognitive alertness 24 hours later, proving localized light exposure travels systemically.</p>
+                        </div>
+                    </div>
+
+                    <a href="https://www.nature.com/articles/s41598-025-09785-3" target="_blank" class="science-link-btn">
+                        Read Full Nature Study
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
+                        </svg>
+                    </a>
+                </div>
+            </section>
+            
+        </main>
+        
+        <!-- Tab Navigation Bar -->
+        <footer class="app-nav-bar">
+            <button class="nav-tab active-tab" id="navHomeBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                </svg>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-tab" id="navSessionBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span>Tracker</span>
+            </button>
+            <button class="nav-tab" id="navInsightsBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                </svg>
+                <span>Science</span>
+            </button>
+        </footer>
+        
+    </div>
+
+    <!-- PWA Settings / Install Guide Popup (iOS specific) -->
+    <div class="install-prompt-overlay" id="installPrompt" style="display: none;">
+        <div class="install-card">
+            <button class="close-btn" id="closeInstallPromptBtn">×</button>
+            <img src="logo.png" alt="Helios Logo" class="install-app-logo">
+            <h3>Add Helios to Home Screen</h3>
+            <p>To experience Helios as a standalone iPhone app, install it directly onto your Home Screen:</p>
+            <ol class="install-steps">
+                <li>Tap the <strong>Share</strong> button <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; display: inline;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg> at the bottom of Safari.</li>
+                <li>Scroll down and select <strong>Add to Home Screen</strong>.</li>
+                <li>Tap <strong>Add</strong> in the top-right corner to complete.</li>
+            </ol>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
