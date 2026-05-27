@@ -483,12 +483,22 @@ function setupTrackerEventListeners() {
     const stopBtn = document.getElementById("stopSessionBtn");
     const cancelBtn = document.getElementById("cancelSessionBtn");
     const clearBtn = document.getElementById("clearHistoryBtn");
+    const exportBtn = document.getElementById("exportHistoryBtn");
+    const importBtn = document.getElementById("importHistoryBtn");
+    const importInput = document.getElementById("importHistoryInput");
     
     startBtn.addEventListener("click", startSolarSession);
     stopBtn.addEventListener("click", stopAndSaveSession);
     cancelBtn.addEventListener("click", cancelActiveSession);
     if (clearBtn) {
         clearBtn.addEventListener("click", clearSavedHistory);
+    }
+    if (exportBtn) {
+        exportBtn.addEventListener("click", exportSavedHistory);
+    }
+    if (importBtn && importInput) {
+        importBtn.addEventListener("click", () => importInput.click());
+        importInput.addEventListener("change", importSavedHistory);
     }
 }
 
@@ -724,6 +734,54 @@ function clearSavedHistory() {
     
     // Refresh the UI and chart
     renderHistoryChart();
+}
+
+function exportSavedHistory() {
+    if (appState.history.length === 0) {
+        alert("There is no circadian session history to backup.");
+        return;
+    }
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState.history, null, 2));
+    const downloadAnchor = document.createElement("a");
+    
+    const dateStr = getLocalDateString(new Date());
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `helios_backup_${dateStr}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+}
+
+function importSavedHistory(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const imported = JSON.parse(e.target.result);
+            if (!Array.isArray(imported)) {
+                throw new Error("Invalid format. History backup must be a JSON array.");
+            }
+            
+            // Basic validation to confirm it is a Helios backup
+            const isValid = imported.length === 0 || imported.every(item => item.hasOwnProperty("date") && item.hasOwnProperty("vitD") && item.hasOwnProperty("nirDose"));
+            if (!isValid) {
+                throw new Error("Invalid Helios backup file structure.");
+            }
+            
+            if (confirm(`Are you sure you want to restore ${imported.length} sessions? This will merge with or overwrite your current history.`)) {
+                appState.history = imported;
+                localStorage.setItem("helios_history", JSON.stringify(appState.history));
+                renderHistoryChart();
+                alert("Backup restored successfully!");
+            }
+        } catch (err) {
+            alert("Failed to restore backup: " + err.message);
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = ""; // reset input
 }
 
 function renderHistoryChart() {

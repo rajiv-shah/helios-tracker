@@ -985,6 +985,38 @@ html, body {
 .nir-legend { background: hsl(var(--clr-nir-red)); }
 .uv-legend { background: hsl(var(--clr-sky-blue)); }
 
+.history-data-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    justify-content: flex-end;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 14px;
+}
+
+.btn-data-action {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 5px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--font-heading);
+    transition: all 0.2s ease;
+}
+
+.btn-data-action:hover {
+    color: hsl(var(--clr-gold-glow));
+    background: rgba(255, 215, 0, 0.08);
+    border-color: rgba(255, 215, 0, 0.25);
+}
+
+.btn-data-action:active {
+    transform: scale(0.95);
+}
+
 /* --- Scientific Insights Panel --- */
 .science-tag {
     font-size: 0.6rem;
