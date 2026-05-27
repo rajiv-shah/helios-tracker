@@ -56,6 +56,14 @@ const FALLBACK_LOCATION = {
     name: "Leicester, UK"
 };
 
+// Local Date Formatter (YYYY-MM-DD) avoiding timezone shifts
+function getLocalDateString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 // --- App State ---
 let appState = {
     coordinates: null,
@@ -88,6 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupTrackerEventListeners();
     setupPwaPrompt();
     registerServiceWorker();
+    setupAutoRefresh();
 });
 
 function registerServiceWorker() {
@@ -98,6 +107,22 @@ function registerServiceWorker() {
                 .catch(err => console.error("Service Worker registration failed:", err));
         });
     }
+}
+
+function setupAutoRefresh() {
+    // 1. Sync GPS & solar weather instantly when PWA resumes from background suspension
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            console.log("Helios resumed from background. Syncing GPS and solar weather...");
+            requestLocation();
+        }
+    });
+
+    // 2. Auto-refresh weather metrics every 30 minutes if left active on screen
+    setInterval(() => {
+        console.log("Helios periodic refresh: Syncing GPS and solar weather...");
+        requestLocation();
+    }, 30 * 60 * 1000);
 }
 
 // --- 1. Circadian Clock Manager ---
@@ -213,8 +238,18 @@ function updateSolarMetricsAndArc() {
     const uvArray = appState.hourlyForecast.hourly.uv_index;
     const ghiArray = appState.hourlyForecast.hourly.shortwave_radiation;
     
-    // Find index matching the current hour today
-    let activeIndex = currentHour;
+    // Find index matching the current local date and hour (e.g. YYYY-MM-DDTHH:00)
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hourStr = String(now.getHours()).padStart(2, '0');
+    const targetTimeStr = `${year}-${month}-${day}T${hourStr}:00`;
+    
+    let activeIndex = times.indexOf(targetTimeStr);
+    if (activeIndex === -1) {
+        // Fallback to absolute index for the active hour of the first day
+        activeIndex = currentHour;
+    }
     
     // Set active stats
     const currentUv = uvArray[activeIndex] !== undefined ? uvArray[activeIndex] : 0;
@@ -447,10 +482,14 @@ function setupTrackerEventListeners() {
     const startBtn = document.getElementById("startSessionBtn");
     const stopBtn = document.getElementById("stopSessionBtn");
     const cancelBtn = document.getElementById("cancelSessionBtn");
+    const clearBtn = document.getElementById("clearHistoryBtn");
     
     startBtn.addEventListener("click", startSolarSession);
     stopBtn.addEventListener("click", stopAndSaveSession);
     cancelBtn.addEventListener("click", cancelActiveSession);
+    if (clearBtn) {
+        clearBtn.addEventListener("click", clearSavedHistory);
+    }
 }
 
 function startSolarSession() {
@@ -612,7 +651,7 @@ function stopAndSaveSession() {
     
     // Create new session object
     const newSession = {
-        date: new Date().toISOString().split('T')[0],
+        date: getLocalDateString(new Date()),
         timestamp: Date.now(),
         durationMinutes: Math.round(appState.session.durationSeconds / 60),
         vitD: Math.round(appState.session.accumulatedVitD),
@@ -663,16 +702,28 @@ function initHistory() {
     if (saved) {
         appState.history = JSON.parse(saved);
     } else {
-        // Pre-populate mock historical records for Leicester, UK to make the UI stunning on first launch
+        // Pre-populate dynamic mock historical records for the last 5 days relative to today
+        const todayMs = Date.now();
         appState.history = [
-            { date: "2026-05-20", timestamp: Date.now() - 5*86400000, durationMinutes: 25, vitD: 1800, nirDose: 140000, mode: "nir" },
-            { date: "2026-05-21", timestamp: Date.now() - 4*86400000, durationMinutes: 15, vitD: 2200, nirDose: 90000, mode: "uv" },
-            { date: "2026-05-22", timestamp: Date.now() - 3*86400000, durationMinutes: 40, vitD: 3400, nirDose: 180000, mode: "uv" },
-            { date: "2026-05-23", timestamp: Date.now() - 2*86400000, durationMinutes: 20, vitD: 0,    nirDose: 110000, mode: "nir" },
-            { date: "2026-05-24", timestamp: Date.now() - 1*86400000, durationMinutes: 30, vitD: 2400, nirDose: 155000, mode: "uv" }
+            { date: getLocalDateString(new Date(todayMs - 5*86400000)), timestamp: todayMs - 5*86400000, durationMinutes: 25, vitD: 1800, nirDose: 140000, mode: "nir" },
+            { date: getLocalDateString(new Date(todayMs - 4*86400000)), timestamp: todayMs - 4*86400000, durationMinutes: 15, vitD: 2200, nirDose: 90000, mode: "uv" },
+            { date: getLocalDateString(new Date(todayMs - 3*86400000)), timestamp: todayMs - 3*86400000, durationMinutes: 40, vitD: 3400, nirDose: 180000, mode: "uv" },
+            { date: getLocalDateString(new Date(todayMs - 2*86400000)), timestamp: todayMs - 2*86400000, durationMinutes: 20, vitD: 0,    nirDose: 110000, mode: "nir" },
+            { date: getLocalDateString(new Date(todayMs - 1*86400000)), timestamp: todayMs - 1*86400000, durationMinutes: 30, vitD: 2400, nirDose: 155000, mode: "uv" }
         ];
         localStorage.setItem("helios_history", JSON.stringify(appState.history));
     }
+}
+
+function clearSavedHistory() {
+    if (!confirm("Are you sure you want to clear all history? This will permanently delete your recorded circadian solar logs.")) return;
+    
+    // Set localStorage to an empty array so it doesn't trigger mock data again
+    localStorage.setItem("helios_history", JSON.stringify([]));
+    appState.history = [];
+    
+    // Refresh the UI and chart
+    renderHistoryChart();
 }
 
 function renderHistoryChart() {
@@ -689,7 +740,7 @@ function renderHistoryChart() {
     for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(now.getDate() - i);
-        const dayStr = d.toISOString().split('T')[0];
+        const dayStr = getLocalDateString(d);
         const dayOfWeek = daysName[d.getDay()];
         
         // Find saved session matching this specific calendar date

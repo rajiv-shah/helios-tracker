@@ -147,7 +147,7 @@
                         <h2>Outdoor Light Tracker</h2>
                         <p class="session-subtitle">Record and calculate active solar doses</p>
                     </div>
-                    <div class="session-status-tag id="sessionStatusTag" style="display: none;">Tracking...</div>
+                    <div class="session-status-tag" id="sessionStatusTag" style="display: none;">Tracking...</div>
                 </div>
 
                 <!-- Session Inputs Setup Panel -->
@@ -312,8 +312,11 @@
             <!-- Historical Solar Log -->
             <section class="glass-card history-container">
                 <div class="card-header">
-                    <h2>Weekly Progress</h2>
-                    <span class="header-desc" id="weeklyStatsSummary">Loading history logs...</span>
+                    <div class="header-title-group">
+                        <h2>Weekly Progress</h2>
+                        <span class="header-desc" id="weeklyStatsSummary">Loading history logs...</span>
+                    </div>
+                    <button class="btn-clear" id="clearHistoryBtn" title="Clear recorded progress data">Clear Data</button>
                 </div>
                 
                 <!-- Custom CSS Bar Chart -->

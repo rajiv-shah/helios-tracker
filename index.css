@@ -214,6 +214,35 @@ html, body {
     color: rgba(255,255,255,0.5);
 }
 
+.header-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.btn-clear {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 5px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--font-heading);
+    transition: all 0.2s ease;
+}
+
+.btn-clear:hover {
+    color: #ff4b2b;
+    background: rgba(255, 75, 43, 0.08);
+    border-color: rgba(255, 75, 43, 0.25);
+}
+
+.btn-clear:active {
+    transform: scale(0.95);
+}
+
 .time-now {
     font-family: var(--font-heading);
     font-size: 0.85rem;
