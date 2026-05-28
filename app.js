@@ -78,6 +78,7 @@ let appState = {
     session: {
         isActive: false,
         timerId: null,
+        startTime: null,
         durationSeconds: 0,
         accumulatedVitD: 0,
         accumulatedNirDose: 0, // mJ/cm²
@@ -97,6 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupPwaPrompt();
     registerServiceWorker();
     setupAutoRefresh();
+    checkActiveSessionRestore();
 });
 
 function registerServiceWorker() {
@@ -109,12 +111,58 @@ function registerServiceWorker() {
     }
 }
 
+function checkActiveSessionRestore() {
+    const savedActive = localStorage.getItem("helios_active_session");
+    if (!savedActive) return;
+    
+    try {
+        const active = JSON.parse(savedActive);
+        if (active && active.startTime) {
+            const ageMs = Date.now() - active.startTime;
+            // Only restore if the session started less than 12 hours ago
+            if (ageMs > 12 * 60 * 60 * 1000) {
+                localStorage.removeItem("helios_active_session");
+                return;
+            }
+            
+            // Restore active session state
+            appState.session.isActive = true;
+            appState.session.startTime = active.startTime;
+            appState.session.skinType = active.skinType || "2";
+            appState.session.clothingLevel = active.clothingLevel || "tshirt_trousers";
+            
+            // Set select values in DOM to match restored state
+            const skinTypeSelect = document.getElementById("skinType");
+            const clothingLevelSelect = document.getElementById("clothingLevel");
+            if (skinTypeSelect) skinTypeSelect.value = appState.session.skinType;
+            if (clothingLevelSelect) clothingLevelSelect.value = appState.session.clothingLevel;
+            
+            // Toggle UI panels to active tracking
+            document.getElementById("trackerSetupPanel").style.display = "none";
+            document.getElementById("activeTrackingPanel").style.display = "block";
+            document.getElementById("sessionStatusTag").style.display = "block";
+            
+            // Run tick once immediately to populate data before first interval
+            tickSessionTimer();
+            
+            // Start the interval
+            appState.session.timerId = setInterval(tickSessionTimer, 1000);
+        }
+    } catch (e) {
+        console.error("Failed to restore active session:", e);
+        localStorage.removeItem("helios_active_session");
+    }
+}
+
 function setupAutoRefresh() {
     // 1. Sync GPS & solar weather instantly when PWA resumes from background suspension
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
             console.log("Helios resumed from background. Syncing GPS and solar weather...");
             requestLocation();
+            if (appState.session.isActive) {
+                tickSessionTimer();
+            }
         }
     });
 
@@ -220,6 +268,9 @@ async function fetchSolarData() {
         appState.hourlyForecast = data;
         
         updateSolarMetricsAndArc();
+        if (appState.session.isActive) {
+            tickSessionTimer();
+        }
         renderHistoryChart();
     } catch (err) {
         console.error("Error fetching data from Open-Meteo:", err);
@@ -509,9 +560,18 @@ function startSolarSession() {
     appState.session.skinType = document.getElementById("skinType").value;
     appState.session.clothingLevel = document.getElementById("clothingLevel").value;
     appState.session.isActive = true;
+    appState.session.startTime = Date.now();
     appState.session.durationSeconds = 0;
     appState.session.accumulatedVitD = 0;
     appState.session.accumulatedNirDose = 0;
+    
+    // Persist active session state to localStorage
+    const activeSession = {
+        startTime: appState.session.startTime,
+        skinType: appState.session.skinType,
+        clothingLevel: appState.session.clothingLevel
+    };
+    localStorage.setItem("helios_active_session", JSON.stringify(activeSession));
     
     // Toggle UI panels
     document.getElementById("trackerSetupPanel").style.display = "none";
@@ -526,10 +586,13 @@ function startSolarSession() {
 }
 
 function tickSessionTimer() {
-    appState.session.durationSeconds++;
+    if (!appState.session.isActive || !appState.session.startTime) return;
+
+    const elapsedSeconds = Math.floor((Date.now() - appState.session.startTime) / 1000);
+    appState.session.durationSeconds = elapsedSeconds;
     
-    const minutes = Math.floor(appState.session.durationSeconds / 60);
-    const seconds = appState.session.durationSeconds % 60;
+    const minutes = Math.floor(elapsedSeconds / 60);
+    const seconds = elapsedSeconds % 60;
     
     // Update Timer Display
     document.getElementById("sessionTime").innerText = 
@@ -545,15 +608,13 @@ function tickSessionTimer() {
         // Exposing 25% of body (T-shirt + shorts) to UV Index 3 in Type II skin produces ~1000 IU in 15 mins.
         // We model: IU_per_second = (UV_index * Base_Rate) * exposed_skin_area / (skin_multiplier_factor)
         const baseRate = 0.5; // calibrate factor
-        const vitDPerSecond = (uvIndex * baseRate * coverage.exposedArea) / skinMultiplier;
+        const vitD = (uvIndex * baseRate * coverage.exposedArea * elapsedSeconds) / skinMultiplier;
         
         // Synthesise D3 up to the safety saturation threshold (max synthesis caps at 8000 IU/session)
-        if (appState.session.accumulatedVitD < 8000) {
-            appState.session.accumulatedVitD += vitDPerSecond;
-        }
+        appState.session.accumulatedVitD = Math.min(vitD, 8000);
     } else {
         // Zero UV = Zero Vit D (early morning / night)
-        appState.session.accumulatedVitD += 0;
+        appState.session.accumulatedVitD = 0;
     }
     
     // --- 5b. Systemic Near-Infrared Dose Scientific Model ---
@@ -571,9 +632,11 @@ function tickSessionTimer() {
         
         // Convert Irradiance (W/m²) to Dosage (mJ/cm²):
         // 1 W/m² = 1 J/s/m² = 1000 mJ / s / 10000 cm² = 0.1 mJ / cm² / second
-        const nirDosePerSecond = effectiveNirIrradiance * 0.1;
+        const nirDose = effectiveNirIrradiance * 0.1 * elapsedSeconds;
         
-        appState.session.accumulatedNirDose += nirDosePerSecond;
+        appState.session.accumulatedNirDose = nirDose;
+    } else {
+        appState.session.accumulatedNirDose = 0;
     }
     
     // --- 5c. UV Safe Limit & Alarm Tracker ---
@@ -675,8 +738,12 @@ function stopAndSaveSession() {
     // Persist history to database (localStorage)
     localStorage.setItem("helios_history", JSON.stringify(appState.history));
     
+    // Clean up active session
+    localStorage.removeItem("helios_active_session");
+    
     // Reset tracker variables
     appState.session.isActive = false;
+    appState.session.startTime = null;
     appState.session.durationSeconds = 0;
     
     // Reset UI Panels
@@ -696,7 +763,12 @@ function cancelActiveSession() {
     if (!confirm("Are you sure you want to discard this solar session? All recorded data will be lost.")) return;
     
     clearInterval(appState.session.timerId);
+    
+    // Clean up active session
+    localStorage.removeItem("helios_active_session");
+    
     appState.session.isActive = false;
+    appState.session.startTime = null;
     appState.session.durationSeconds = 0;
     
     document.getElementById("trackerSetupPanel").style.display = "block";
