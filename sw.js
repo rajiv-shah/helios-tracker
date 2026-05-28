@@ -3,12 +3,14 @@
    Offline Cache Engine
    ========================================================================== */
 
-const CACHE_NAME = "helios-v1";
+const CACHE_NAME = "helios-v2";
 const ASSETS_TO_CACHE = [
   "index.html",
   "index.css",
   "app.js",
   "logo.png",
+  "icon-192.png",
+  "apple-touch-icon.png",
   "manifest.json"
 ];
 
