@@ -3,7 +3,7 @@
    Offline Cache Engine
    ========================================================================== */
 
-const CACHE_NAME = "helios-v2";
+const CACHE_NAME = "helios-v3";
 const ASSETS_TO_CACHE = [
   "index.html",
   "index.css",

@@ -1242,3 +1242,201 @@ html, body {
     50% { box-shadow: 0 4px 28px rgba(255, 215, 0, 0.6); }
     100% { box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3); }
 }
+
+/* --- Conspicuous Header Version Pill --- */
+.brand-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.version-badge {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 65, 108, 0.15));
+    border: 1px solid rgba(255, 65, 108, 0.3);
+    color: hsl(var(--clr-gold-glow));
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 10px rgba(255, 65, 108, 0.1);
+}
+
+/* --- About & Simple User Guide Section --- */
+.about-container {
+    margin-bottom: 24px;
+}
+
+.about-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.about-version-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 16px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.app-info-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.about-app-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.about-app-title {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #ffd700, #ff416c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.about-pill-container {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.about-version-badge {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 65, 108, 0.2));
+    border: 1px solid rgba(255, 65, 108, 0.4);
+    color: hsl(var(--clr-gold-glow));
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+    box-shadow: 0 0 12px rgba(255, 65, 108, 0.2);
+}
+
+.about-status-badge {
+    background: rgba(0, 230, 118, 0.1);
+    border: 1px solid rgba(0, 230, 118, 0.2);
+    color: hsl(var(--clr-emerald-glow));
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+}
+
+.about-description {
+    font-size: 0.76rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.45;
+}
+
+.divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    width: 100%;
+}
+
+.guide-section-title {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.user-guide-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.guide-step {
+    display: flex;
+    gap: 12px;
+}
+
+.guide-step-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 65, 108, 0.1));
+    border: 1px solid rgba(255, 65, 108, 0.3);
+    color: hsl(var(--clr-gold-glow));
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px rgba(255, 65, 108, 0.1);
+}
+
+.guide-step-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.guide-step-text strong {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.guide-step-text p {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.4;
+}
+
+.about-pwa-tips {
+    background: rgba(255, 215, 0, 0.03);
+    border: 1px solid rgba(255, 215, 0, 0.08);
+    padding: 12px 14px;
+    border-radius: 12px;
+}
+
+.about-pwa-tips h4 {
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: hsl(var(--clr-gold-glow));
+    margin-bottom: 6px;
+}
+
+.about-pwa-tips ul {
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-left: 0;
+}
+
+.about-pwa-tips li {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.35;
+    position: relative;
+    padding-left: 12px;
+}
+
+.about-pwa-tips li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: hsl(var(--clr-gold-glow));
+}

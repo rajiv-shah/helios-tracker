@@ -34,7 +34,10 @@
             <div class="brand">
                 <img src="logo.png" alt="Helios Logo" class="brand-logo" id="appLogo">
                 <div class="brand-text">
-                    <h1>HELIOS</h1>
+                    <div class="brand-title-row">
+                        <h1>HELIOS</h1>
+                        <span class="version-badge">v1.2.0</span>
+                    </div>
                     <span class="sub-brand">Solar Circadian Health</span>
                 </div>
             </div>
@@ -388,6 +391,86 @@
                     </a>
                 </div>
             </section>
+
+            <!-- About & Simple User Guide Section -->
+            <section class="glass-card about-container">
+                <div class="card-header">
+                    <h2>About Helios Tracker</h2>
+                    <span class="header-desc">Version & Guide</span>
+                </div>
+                
+                <div class="about-content">
+                    <!-- Conspicuous Version Number Badge -->
+                    <div class="about-version-card">
+                        <div class="app-info-row">
+                            <img src="logo.png" alt="Helios Logo" class="about-app-logo">
+                            <div>
+                                <h3 class="about-app-title">HELIOS TRACKER</h3>
+                                <div class="about-pill-container">
+                                    <span class="about-version-badge">v1.2.0</span>
+                                    <span class="about-status-badge">Official Release</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="about-description">
+                            Helios is a Progressive Web Application designed for iOS Safari Standalone to monitor and log your daily exposure to therapeutic solar light wavelengths. It models UV-triggered Vitamin D3 synthesis and clothes-transmitting Near-Infrared (NIR) deep tissue charging.
+                        </p>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- Simple User Guide -->
+                    <h3 class="guide-section-title">☀️ Simple User Guide</h3>
+                    <div class="user-guide-steps">
+                        <div class="guide-step">
+                            <div class="guide-step-number">1</div>
+                            <div class="guide-step-text">
+                                <strong>Configure Skin & Clothes</strong>
+                                <p>Set your Fitzpatrick Skin Type and Clothing Level. These variables calibrate the Vitamin D rate and UV limits (sunburn protection thresholds).</p>
+                            </div>
+                        </div>
+                        <div class="guide-step">
+                            <div class="guide-step-number">2</div>
+                            <div class="guide-step-text">
+                                <strong>Plan Around Windows</strong>
+                                <p>Check the active therapeutic window (Morning NIR Prime, Midday Vitamin D, or Evening NIR Recovery) to optimize your outdoor timing.</p>
+                            </div>
+                        </div>
+                        <div class="guide-step">
+                            <div class="guide-step-number">3</div>
+                            <div class="guide-step-text">
+                                <strong>Start Outdoors</strong>
+                                <p>Click "Start Solar Session" when stepping outside. Place the app in your pocket or hold it; NIR is computed for both exposed and covered chest areas.</p>
+                            </div>
+                        </div>
+                        <div class="guide-step">
+                            <div class="guide-step-number">4</div>
+                            <div class="guide-step-text">
+                                <strong>Save Your Session</strong>
+                                <p>Watch your live doses rise and seek shade if sunburn alarms trigger. Tap <strong>End & Save Session</strong> to log your minutes, Vitamin D, and NIR totals into memory and update your weekly charts.</p>
+                            </div>
+                        </div>
+                        <div class="guide-step">
+                            <div class="guide-step-number">5</div>
+                            <div class="guide-step-text">
+                                <strong>Backup & Import Backups</strong>
+                                <p>Prevent data loss! Scroll to the Weekly Progress panel and tap <strong>Backup Data</strong> to download your history as a `.json` file, or select <strong>Restore Backup</strong> to import and merge your saved logs.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- PWA Tips & Support -->
+                    <div class="about-pwa-tips">
+                        <h4>💡 PWA Standalone Features</h4>
+                        <ul>
+                            <li><strong>Offline Access:</strong> Fully cached service worker lets you launch offline.</li>
+                            <li><strong>Add to Home Screen:</strong> Tap Share <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="display:inline; vertical-align:middle;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg> and select "Add to Home Screen" to open as a full-screen, standalone app.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
             
         </main>
         
@@ -411,6 +494,14 @@
                     <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
                 </svg>
                 <span>Science</span>
+            </button>
+            <button class="nav-tab" id="navAboutBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                <span>About</span>
             </button>
         </footer>
         

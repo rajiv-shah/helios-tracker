@@ -196,7 +196,8 @@ function initNavigation() {
     const tabs = {
         navHomeBtn: document.querySelector(".solar-arc-container"),
         navSessionBtn: document.querySelector(".session-tracker-container"),
-        navInsightsBtn: document.querySelector(".science-insights-container")
+        navInsightsBtn: document.querySelector(".science-insights-container"),
+        navAboutBtn: document.querySelector(".about-container")
     };
     
     Object.keys(tabs).forEach(btnId => {
@@ -784,16 +785,9 @@ function initHistory() {
     if (saved) {
         appState.history = JSON.parse(saved);
     } else {
-        // Pre-populate dynamic mock historical records for the last 5 days relative to today
-        const todayMs = Date.now();
-        appState.history = [
-            { date: getLocalDateString(new Date(todayMs - 5*86400000)), timestamp: todayMs - 5*86400000, durationMinutes: 25, vitD: 1800, nirDose: 140000, mode: "nir" },
-            { date: getLocalDateString(new Date(todayMs - 4*86400000)), timestamp: todayMs - 4*86400000, durationMinutes: 15, vitD: 2200, nirDose: 90000, mode: "uv" },
-            { date: getLocalDateString(new Date(todayMs - 3*86400000)), timestamp: todayMs - 3*86400000, durationMinutes: 40, vitD: 3400, nirDose: 180000, mode: "uv" },
-            { date: getLocalDateString(new Date(todayMs - 2*86400000)), timestamp: todayMs - 2*86400000, durationMinutes: 20, vitD: 0,    nirDose: 110000, mode: "nir" },
-            { date: getLocalDateString(new Date(todayMs - 1*86400000)), timestamp: todayMs - 1*86400000, durationMinutes: 30, vitD: 2400, nirDose: 155000, mode: "uv" }
-        ];
-        localStorage.setItem("helios_history", JSON.stringify(appState.history));
+        // Start with zero tracking stats (empty history array)
+        appState.history = [];
+        localStorage.setItem("helios_history", JSON.stringify([]));
     }
 }
 
